@@ -35,6 +35,24 @@
   border-radius: 12px;
 }
 
+.expense-item__action {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  text-align: left;
+}
+
+.expense-item__action button {
+  font: inherit;
+  cursor: pointer;
+  padding: 1rem 2rem;
+  border: 1px solid white;
+  background-color: #40005d;
+  color: white;
+  border-radius: 12px;
+  margin-right: 1rem;
+}
+
 @media (min-width: 580px) {
   .expense-item__description {
     flex-direction: row;

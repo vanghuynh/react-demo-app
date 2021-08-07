@@ -1,17 +1,12 @@
-import React, {useState} from 'react';
-import './ExpenseForm.css';
+import React, {useState, useRef} from 'react';
+import styles from  './ExpenseForm.module.css';
 
 const ExpenseForm = (props) => {
 
-  const [title, setTitle] = useState('');
+  const titleRef = useRef();
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState('');
 
-  const titleChangeHandler = (event) => {
-    //console.log('titleChangeHandler', event);
-    setTitle(event.target.value);
-    console.log(title);
-  }
   const amountChangeHandler = (event) => {
     setAmount(event.target.value);
     console.log(amount);
@@ -23,8 +18,9 @@ const ExpenseForm = (props) => {
   const formSubmitHandler = (event) => {
     event.preventDefault();
     console.log('formSubmitHandler!!');
+    console.log('Title Ref: ', titleRef.current.value);
     const newExpenseData = {
-      title: title,
+      title: titleRef.current.value,
       amount:amount,
       date: date
     }
@@ -33,32 +29,34 @@ const ExpenseForm = (props) => {
     // pass data to parent
     props.onSaveExpenseClick(newExpenseData, now)
     // Reset form value ???
-    setTitle('');
+    titleRef.current.value = '';
     setAmount('');
     setDate('');
   }
   return (
     <form onSubmit={formSubmitHandler}>
-      <div className='new-expense__controls'>
-        <div className='new-expense__control'>
+      <div className={styles['new-expense__controls']}>
+        <div className={styles['new-expense__control']}>
           <label>Title</label>
-          <input type='text' value={title} onChange={titleChangeHandler}></input>
+          <input type='text'
+          ref={titleRef}
+          ></input>
         </div>
-        <div className='new-expense__control'>
+        <div className={styles['new-expense__control']}>
           <label>Amount</label>
           <input type='number' min='0.01' step='0.01'
             value={amount}
             onChange={amountChangeHandler}
           ></input>
         </div>
-        <div className='new-expense__control'>
+        <div className={styles['new-expense__control']}>
           <label>Date</label>
           <input type='date'  min='2021-01-01' max='2025-01-01'
             value={date}
             onChange={dateChangeHandler}
           ></input>
         </div>
-        <div className='new-expense__actions'>
+        <div className={styles['new-expense__actions']}>
           <button type='submit'>Add Expense</button>
         </div>
       </div>
