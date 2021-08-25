@@ -1,9 +1,10 @@
 import "./App.css";
 import Expenses from "./components/expenses/Expenses";
 import NewExpense from "./components/expenses/NewExpense/NewExpense";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import MainHeader from './components/MainHeader/MainHeader';
 import Login from './components/Login/Login';
+import AuthContext from './store/auth-context';
 
 const App = () => {
   const expenses = [
@@ -26,42 +27,21 @@ const App = () => {
     });
     console.log("expenseList: ", expenseList);
   };
-
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    const storedUserLoggedInInformation = localStorage.getItem('isLoggedIn');
-
-    if (storedUserLoggedInInformation === '1') {
-      setIsLoggedIn(true);
-    }
-  }, []);
-
-  const loginHandler = (email, password) => {
-    // We should of course check email and password
-    // But it's just a dummy/ demo anyways
-    localStorage.setItem('isLoggedIn', '1');
-    setIsLoggedIn(true);
-  };
-
-  const logoutHandler = () => {
-    localStorage.removeItem('isLoggedIn');
-    setIsLoggedIn(false);
-  };
+  const authCtx = useContext(AuthContext);
 
   return (
     <React.Fragment>
-      <MainHeader isAuthenticated={isLoggedIn} onLogout={logoutHandler} />
+      <MainHeader isAuthenticated={authCtx.isLoggedIn} />
       <main>
-      {!isLoggedIn && <Login onLogin={loginHandler} />}
-      {isLoggedIn && 
+      {!authCtx.isLoggedIn && <Login/>}
+      {authCtx.isLoggedIn && 
         <React.Fragment>
           <NewExpense onSaveExpense={saveExpenseHandler}></NewExpense>
           <Expenses items={expenseList}></Expenses>
         </React.Fragment>
       }
       </main>
-    </React.Fragment>
+      </React.Fragment>
   );
 };
 
