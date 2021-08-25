@@ -1,16 +1,88 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useReducer, useEffect} from 'react';
 import styles from  './ExpenseForm.module.css';
+
+const titleReducer = (state, action) => {
+  if(action.type === 'USER_INPUT'){
+    return {
+      value: action.val,
+      isValid: action.val.trim().length > 0 
+    }
+  }
+  if(action.type === 'USER_BLUR'){
+    return {
+      value: state.value,
+      isValid: state.value.trim().length > 0 
+    }
+  }
+  if(action.type === 'USER_SUBMITTED'){
+    return {
+      value: '',
+      isValid: true 
+    }
+  }
+  return {value: '', isValid: true}
+}
+
+const amountReducer = (state, action) => {
+  if(action.type === 'USER_INPUT'){
+    return {
+      value: action.val,
+      isValid: action.val.trim().length > 0 
+    }
+  }
+  if(action.type === 'USER_BLUR'){
+    return {
+      value: state.value,
+      isValid: state.value.trim().length > 0 
+    }
+  }
+  if(action.type === 'USER_SUBMITTED'){
+    return {
+      value: '',
+      isValid: true 
+    }
+  }
+  return {value: '', isValid: true}
+}
 
 const ExpenseForm = (props) => {
 
-  const titleRef = useRef();
-  const [amount, setAmount] = useState('');
-  const [date, setDate] = useState('');
+  const [titleState, dispatchTitle] = useReducer(titleReducer, {value: '', isValid: true});
+  const [amountState, dispatchAmount] = useReducer(amountReducer, {value: '', isValid: true});
 
-  const amountChangeHandler = (event) => {
-    setAmount(event.target.value);
-    console.log(amount);
+  const [date, setDate] = useState('');
+  const [formIsValid, setFormIsValid] = useState(false);
+
+  const titleChangeHandler = (event) => {
+    dispatchTitle({type: 'USER_INPUT', val: event.target.value});
+    // setFormIsValid(event.target.value.trim().length > 0 && amountState.value.trim().length > 0);
   }
+  const titleValidateHandler = (event) => {
+    dispatchTitle({type: 'USER_BLUR'})
+  }
+  const amountChangeHandler = (event) => {
+    dispatchAmount({type: 'USER_INPUT', val: event.target.value});
+    // setFormIsValid(event.target.value.trim().length > 0 && titleState.value.trim().length > 0);
+  }
+  const amountValidateHandler = (event) => {
+    dispatchTitle({type: 'USER_BLUR'});
+  }
+
+  const { isValid: titleIsValid } = titleState; // object destructuring with alias
+  const { isValid: amountIsValid } = amountState; // object destructuring with alias
+
+
+  useEffect(() => {
+    const identifier = setTimeout(() => {
+      console.log('Check form validity!!!')
+      setFormIsValid(amountIsValid && titleIsValid);
+    }, 500);
+    return () => {
+      console.log('CLEAN-UP')
+      clearTimeout(identifier);
+    }
+  }, [titleIsValid, amountIsValid]);
+
   const dateChangeHandler = (event) => {
     setDate(event.target.value);
     console.log(date);
@@ -18,10 +90,10 @@ const ExpenseForm = (props) => {
   const formSubmitHandler = (event) => {
     event.preventDefault();
     console.log('formSubmitHandler!!');
-    console.log('Title Ref: ', titleRef.current.value);
+    console.log('Title value: ', titleState.value);
     const newExpenseData = {
-      title: titleRef.current.value,
-      amount:amount,
+      title: titleState.value,
+      amount: amountState.value,
       date: date
     }
     const now = new Date();
@@ -29,24 +101,27 @@ const ExpenseForm = (props) => {
     // pass data to parent
     props.onSaveExpenseClick(newExpenseData, now)
     // Reset form value ???
-    titleRef.current.value = '';
-    setAmount('');
+    dispatchTitle({type: 'USER_SUBMITTED'})
+    dispatchAmount({type: 'USER_SUBMITTED'});
     setDate('');
   }
   return (
     <form onSubmit={formSubmitHandler}>
       <div className={styles['new-expense__controls']}>
-        <div className={styles['new-expense__control']}>
+        <div className={`${styles['new-expense__control']} ${titleState.isValid === false ? styles['invalid'] : ''}`}>
           <label>Title</label>
           <input type='text'
-          ref={titleRef}
+          onChange={titleChangeHandler}
+          onBlur={titleValidateHandler}
+          value={titleState.value} 
           ></input>
         </div>
-        <div className={styles['new-expense__control']}>
+        <div className={`${styles['new-expense__control']} ${amountState.isValid === false ? styles['invalid'] : ''}`}>
           <label>Amount</label>
           <input type='number' min='0.01' step='0.01'
-            value={amount}
+            value={amountState.value}
             onChange={amountChangeHandler}
+            onBlur={amountValidateHandler}
           ></input>
         </div>
         <div className={styles['new-expense__control']}>
@@ -56,8 +131,8 @@ const ExpenseForm = (props) => {
             onChange={dateChangeHandler}
           ></input>
         </div>
-        <div className={styles['new-expense__actions']}>
-          <button type='submit'>Add Expense</button>
+        <div className={`${styles['new-expense__actions']} ${!formIsValid ? styles['disabled'] : ''}`}>
+          <button disabled={!formIsValid} type='submit'>Add Expense</button>
         </div>
       </div>
     </form>
