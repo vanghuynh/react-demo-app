@@ -1,4 +1,5 @@
 import React, {useState, useReducer, useEffect} from 'react';
+import Input from '../../ui/Input/Input';
 import styles from  './ExpenseForm.module.css';
 
 const titleReducer = (state, action) => {
@@ -108,29 +109,28 @@ const ExpenseForm = (props) => {
   return (
     <form onSubmit={formSubmitHandler}>
       <div className={styles['new-expense__controls']}>
-        <div className={`${styles['new-expense__control']} ${titleState.isValid === false ? styles['invalid'] : ''}`}>
-          <label>Title</label>
-          <input type='text'
+        <Input
           onChange={titleChangeHandler}
           onBlur={titleValidateHandler}
-          value={titleState.value} 
-          ></input>
-        </div>
-        <div className={`${styles['new-expense__control']} ${amountState.isValid === false ? styles['invalid'] : ''}`}>
-          <label>Amount</label>
-          <input type='number' min='0.01' step='0.01'
-            value={amountState.value}
-            onChange={amountChangeHandler}
-            onBlur={amountValidateHandler}
-          ></input>
-        </div>
-        <div className={styles['new-expense__control']}>
-          <label>Date</label>
-          <input type='date'  min='2021-01-01' max='2025-01-01'
-            value={date}
-            onChange={dateChangeHandler}
-          ></input>
-        </div>
+          label='Title'
+          type='text'
+          isValid={titleState.isValid}
+          value={titleState.value}
+        />
+        <Input
+          onChange={amountChangeHandler}
+          onBlur={amountValidateHandler}
+          label='Amount'
+          type='number'
+          isValid={amountState.isValid}
+          value={amountState.value}
+        />
+        <Input
+          onChange={dateChangeHandler}
+          label='Date'
+          type='date'
+          value={date}
+        />
         <div className={`${styles['new-expense__actions']} ${!formIsValid ? styles['disabled'] : ''}`}>
           <button disabled={!formIsValid} type='submit'>Add Expense</button>
         </div>
