@@ -6,27 +6,30 @@ import MainHeader from './components/MainHeader/MainHeader';
 import Login from './components/Login/Login';
 import AuthContext from './store/auth-context';
 import Button from './components/ui/Button/Button';
+import useHttp from './hook/use-http';
 
 const App = () => {
   const [expenseList, setExpenseList] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  // fetch data from server 
-  const fetchDataHandler = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const expenseData = await getExpenseData();
-      setExpenseList(expenseData);
-    } catch (err) {
-      setError('Error getting data');
-    }
-    setIsLoading(false);
-  }, []);
+  const transformedExpenses = (data) => {
+    console.log(data);
+    const expenseList = Object.entries(data).map(([key,item]) => {
+      return {
+        id: item.id,
+        title: item.title,
+        amount: item.amount,
+        date: new Date(item.date)
+      };
+    });
+    setExpenseList(expenseList);
+  }
+  const { isLoading ,error, sendRequest: fetchDataHandler} = useHttp({
+    url: 'https://g1-mart-demo-default-rtdb.firebaseio.com/expense.json',
+    method: 'GET',
+  }, transformedExpenses);
 
   useEffect(() => {
     fetchDataHandler();
-  }, [fetchDataHandler]);
+  }, []);
 
   const saveExpenseHandler = async (expense) => {
     console.log("App: ", expense);
@@ -82,22 +85,3 @@ const App = () => {
 };
 
 export default App;
-
-async function getExpenseData() {
-  const res = await fetch('https://g1-mart-demo-default-rtdb.firebaseio.com/expense.json');
-  if (!res.ok) {
-    throw new Error('Error getting data');
-  }
-  const data = await res.json();
-  console.log(data);
-  const expenseList = Object.entries(data).map(([key,item]) => {
-    return {
-      id: item.id,
-      title: item.title,
-      amount: item.amount,
-      date: new Date(item.date)
-    };
-  });
-  return expenseList;
-}
-
