@@ -10,6 +10,7 @@ import useHttp from './hook/use-http';
 
 const App = () => {
   const [expenseList, setExpenseList] = useState([]);
+  const { isLoading ,error, sendRequest} = useHttp();
   const transformedExpenses = (data) => {
     console.log(data);
     const expenseList = Object.entries(data).map(([key,item]) => {
@@ -22,14 +23,19 @@ const App = () => {
     });
     setExpenseList(expenseList);
   }
-  const { isLoading ,error, sendRequest: fetchDataHandler} = useHttp({
-    url: 'https://g1-mart-demo-default-rtdb.firebaseio.com/expense.json',
-    method: 'GET',
-  }, transformedExpenses);
-
   useEffect(() => {
-    fetchDataHandler();
-  }, []);
+    sendRequest({
+      url: 'https://g1-mart-demo-default-rtdb.firebaseio.com/expense.json',
+      method: 'GET',
+    }, transformedExpenses);
+  }, [sendRequest]);
+
+  const reloadExpenseData = () => {
+    sendRequest({
+      url: 'https://g1-mart-demo-default-rtdb.firebaseio.com/expense.json',
+      method: 'GET',
+    }, transformedExpenses);
+  }
 
   const saveExpenseHandler = async (expense) => {
     console.log("App: ", expense);
@@ -41,16 +47,17 @@ const App = () => {
       date: new Date(expense.date),
       id: Math.random(2).toString(),
     };
-    setExpenseList((prevState) => {
-      return [modifiedExpense, ...prevState];
-    });
-    console.log("expenseList: ", expenseList);
-    const response = await fetch('https://g1-mart-demo-default-rtdb.firebaseio.com/expense.json',{
+    // const response = await fetch('https://g1-mart-demo-default-rtdb.firebaseio.com/expense.json',{
+    //   method: 'POST',
+    //   body: JSON.stringify(modifiedExpense)
+    // });
+    const response = await sendRequest({
+      url: 'https://g1-mart-demo-default-rtdb.firebaseio.com/expense.json',
       method: 'POST',
-      body: JSON.stringify(modifiedExpense)
-    });
-    const data = await response.json();
-    console.log('Expense Data: ', JSON.stringify(data))
+      body: modifiedExpense
+    }, null);
+    console.log('Expense Data: ', JSON.stringify(response))
+    reloadExpenseData();
   };
   const authCtx = useContext(AuthContext);
 
@@ -73,7 +80,7 @@ const App = () => {
       {authCtx.isLoggedIn && 
         <React.Fragment>
           <NewExpense onSaveExpense={saveExpenseHandler}></NewExpense>
-          <Button onClick={fetchDataHandler}>
+          <Button onClick={reloadExpenseData}>
             Load Data
           </Button>
           {content}

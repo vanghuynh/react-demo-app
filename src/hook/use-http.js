@@ -1,10 +1,10 @@
-import React, {useState} from 'react';
+import React, {useState, useCallback} from 'react';
 
-const useHttp = (requestConfig, applyData) => {
+const useHttp = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   // fetch data from server 
-  const sendRequest = async () => {
+  const sendRequest = useCallback(async (requestConfig, applyData) => {
     setIsLoading(true);
     setError(null);
     try {
@@ -20,7 +20,7 @@ const useHttp = (requestConfig, applyData) => {
       setError('Error getting data');
     }
     setIsLoading(false);
-  }
+  }, []);
   return {
     isLoading,
     error,
